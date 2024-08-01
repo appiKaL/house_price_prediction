@@ -1,9 +1,40 @@
 import streamlit as st
 import requests
+import json
 
-st.title("House Price Prediction")
+st.set_page_config(
+    page_title="House Price Prediction",
+    layout="centered",
+    initial_sidebar_state="expanded",
+)
 
-# Mapping for selectbox options (actual value : display value)
+st.markdown(
+    """
+    <style>
+    .reportview-container {
+        background: url("https://your-image-url.com/background.jpg");
+        background-size: cover;
+    }
+    .sidebar .sidebar-content {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    .css-18e3th9 {
+        font-family: 'Arial', sans-serif;
+        color: #333333;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #333333;
+        font-family: 'Arial', sans-serif;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown("<h1 style='text-align: center; color: #333;'>House Price Prediction</h1>", unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
 floodingzone_options = {
     'NON_FLOOD_ZONE': 'Non flood zone', 
     'POSSIBLE_FLOOD_ZONE': 'Possible flood zone', 
@@ -80,25 +111,28 @@ typeofsale_options = {
     'annuity_lump_sum': 'Annuity lump sum'
 }
 
-# Collect input data from the user
-BathroomCount = st.number_input('Bathroom Count', format="%.1f")
-BedroomCount = st.number_input('Bedroom Count', format="%.1f")
-ConstructionYear = st.number_input('Construction Year', format="%.0f")
-Fireplace = st.number_input('Fireplace', format="%.1f")
-FloodingZone = st.selectbox('Flooding Zone', list(floodingzone_options.values()))
-Furnished = st.number_input('Furnished', format="%.1f")
-Garden = st.number_input('Garden', format="%.1f")
-GardenArea = st.number_input('Garden Area', format="%.1f")
-Kitchen = st.selectbox('Kitchen', list(kitchen_options.values()))
-LivingArea = st.number_input('Living Area', format="%.1f")
-MonthlyCharges = st.number_input('Monthly Charges', format="%.1f")
-NumberOfFacades = st.number_input('Number of Facades', format="%.1f")
-PEB = st.selectbox('PEB', list(peb_options.values()))
-PostalCode = st.number_input('Postal Code', format="%.0f")
-RoomCount = st.number_input('Room Count', format="%.1f")
-ShowerCount = st.number_input('Shower Count', format="%.1f")
-StateOfBuilding = st.selectbox('State of Building', list(stateofbuilding_options.values()))
-SubtypeOfProperty = st.selectbox('Subtype of Property', list(subtypeofproperty_options.values()))
+with col1:
+    BathroomCount = st.number_input('Bathroom Count', format="%.1f")
+    BedroomCount = st.number_input('Bedroom Count', format="%.1f")
+    ConstructionYear = st.number_input('Construction Year', format="%.0f")
+    Fireplace = st.number_input('Fireplace', format="%.1f")
+    FloodingZone = st.selectbox('Flooding Zone', list(floodingzone_options.values()))
+    Furnished = st.number_input('Furnished', format="%.1f")
+    Garden = st.number_input('Garden', format="%.1f")
+    GardenArea = st.number_input('Garden Area', format="%.1f")
+    Kitchen = st.selectbox('Kitchen', list(kitchen_options.values()))
+
+with col2:
+    LivingArea = st.number_input('Living Area', format="%.1f")
+    MonthlyCharges = st.number_input('Monthly Charges', format="%.1f")
+    NumberOfFacades = st.number_input('Number of Facades', format="%.1f")
+    PEB = st.selectbox('PEB', list(peb_options.values()))
+    PostalCode = st.number_input('Postal Code', format="%.0f")
+    RoomCount = st.number_input('Room Count', format="%.1f")
+    ShowerCount = st.number_input('Shower Count', format="%.1f")
+    StateOfBuilding = st.selectbox('State of Building', list(stateofbuilding_options.values()))
+    SubtypeOfProperty = st.selectbox('Subtype of Property', list(subtypeofproperty_options.values()))
+
 SurfaceOfPlot = st.number_input('Surface of Plot', format="%.1f")
 SwimmingPool = st.number_input('Swimming Pool', format="%.1f")
 Terrace = st.number_input('Terrace', format="%.1f")
@@ -135,11 +169,18 @@ if st.button("Predict Price"):
         "TypeOfProperty": TypeOfProperty,
         "TypeOfSale": [key for key, value in typeofsale_options.items() if value == TypeOfSale][0]
     }
-    
-    response = requests.post(API_URL, json=payload)
-    
-    if response.status_code == 200:
-        result = response.json()
-        st.success(f"Predicted Price: {result['predicted_price']}")
-    else:
-        st.error("Error occurred while predicting the price.")
+
+    # Debugging: Log the payload being sent
+    st.write("Payload being sent to API:", payload)
+
+    try:
+        response = requests.post(API_URL, json=payload)
+        response_data = response.json()
+        st.write("Response from API:", response_data)
+        if response.status_code == 200:
+            st.success(f"Predicted Price: {response_data['predicted_price']}")
+        else:
+            st.error(f"API returned an error: {response_data.get('detail', 'Unknown error')}")
+    except Exception as e:
+        st.error(f"Request failed: {str(e)}")
+
