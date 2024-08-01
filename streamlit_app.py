@@ -140,7 +140,7 @@ ToiletCount = st.number_input('Toilet Count', format="%.1f")
 TypeOfProperty = st.number_input('Type of Property', format="%.0f")
 TypeOfSale = st.selectbox('Type of Sale', list(typeofsale_options.values()))
 
-API_URL = "https://your-fastapi-service-url.onrender.com/predict"
+API_URL = "https://house-price-prediction-qd90.onrender.com"
 
 if st.button("Predict Price"):
     payload = {
