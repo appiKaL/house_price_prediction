@@ -173,17 +173,25 @@ if st.button("Predict Price"):
     # Debugging: Log the payload being sent
     st.write("Payload being sent to API:", payload)
 
-    # try:
-    #     response = requests.post(API_URL, json=payload)
-    #     response_data = response.json()
-    #     st.write("Response from API:", response_data)
-    #     if response.status_code == 200:
-    #         st.success(f"Predicted Price: {response_data['predicted_price']}")
-    #     else:
-    #         st.error(f"API returned an error: {response_data.get('detail', 'Unknown error')}")
-    # except Exception as e:
-    #     st.error(f"Request failed: {str(e)}")
+    try:
+        # Send the request to the FastAPI backend
+        response = requests.post(API_URL, json=payload)
 
-response = requests.post(API_URL, json=payload)
-response_data = response.json()
-st.write("Response from API:", response_data)
+        # Log the raw response for debugging purposes
+        st.write("Raw response:", response.content)
+
+        # Attempt to parse the response as JSON
+        response_data = response.json()
+
+        # Log the parsed response
+        st.write("Parsed response:", response_data)
+
+        if response.status_code == 200:
+            st.success(f"Predicted Price: {response_data['predicted_price']}")
+        else:
+            st.error(f"API returned an error: {response_data.get('detail', 'Unknown error')}")
+    except json.JSONDecodeError as e:
+        st.error(f"JSON decode error: {str(e)}")
+        st.write("Response content that caused the error:", response.content)
+    except requests.exceptions.RequestException as e:
+        st.error(f"Request failed: {str(e)}")
