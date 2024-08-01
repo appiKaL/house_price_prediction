@@ -6,3 +6,4 @@ numpy==1.26.4
 streamlit==1.19.0
 requests==2.31.0
 xgboost==1.7.3
+altair==4.2.0
