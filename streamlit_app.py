@@ -3,18 +3,25 @@ import requests
 
 st.title("House Price Prediction")
 
-feature1 = st.number_input("Feature 1")
-feature2 = st.number_input("Feature 2")
-feature3 = st.number_input("Feature 3")
+feature_names = [
+    'bathroomcount', 'bedroomcount', 'constructionyear', 'fireplace',
+    'floodingzone', 'furnished', 'garden', 'gardenarea', 'kitchen', 
+    'livingarea', 'monthlycharges', 'numberoffacades', 'peb', 'postalcode', 
+    'roomcount', 'showercount', 'stateofbuilding', 'subtypeofproperty', 
+    'surfaceofplot', 'swimmingpool', 'terrace', 'toiletcount', 
+    'typeofproperty', 'typeofsale'
+]
 
-API_URL = "https://house-price-prediction-qd90.onrender.com"
+feature_inputs = {}
+
+for feature in feature_names:
+    feature_inputs[feature] = st.number_input(feature, format="%.5f")
+
+API_URL = "https://your-fastapi-service-url.onrender.com/predict"
 
 if st.button("Predict Price"):
-    payload = {
-        "feature1": feature1,
-        "feature2": feature2,
-        "feature3": feature3,
-    }
+    payload = {feature: feature_inputs[feature] for feature in feature_names}
+    
     response = requests.post(API_URL, json=payload)
     
     if response.status_code == 200:
