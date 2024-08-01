@@ -7,7 +7,7 @@ feature1 = st.number_input("Feature 1")
 feature2 = st.number_input("Feature 2")
 feature3 = st.number_input("Feature 3")
 
-API_URL = "http://localhost:8000/predict"
+API_URL = "https://house-price-prediction-qd90.onrender.com"
 
 if st.button("Predict Price"):
     payload = {
