@@ -181,7 +181,6 @@ if st.button("Predict Price") and TypeOfProperty is not None:
         "Terrace": 1 if Terrace else 0,
         "ToiletCount": ToiletCount,
         "TypeOfProperty": TypeOfProperty,
-        "TypeOfSale":
         "TypeOfSale": [key for key, value in typeofsale_options.items() if value == TypeOfSale][0]
     }
 
