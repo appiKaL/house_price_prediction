@@ -111,31 +111,31 @@ typeofsale_options = {
 }
 
 with col1:
-    BathroomCount = st.number_input('Bathroom Count', format="%.1f")
-    BedroomCount = st.number_input('Bedroom Count', format="%.1f")
+    BathroomCount = st.number_input('Bathroom Count', format="%.0f")
+    BedroomCount = st.number_input('Bedroom Count', format="%.0f")
     ConstructionYear = st.number_input('Construction Year', format="%.0f")
     Fireplace = st.checkbox('Fireplace')
     FloodingZone = st.selectbox('Flooding Zone', list(floodingzone_options.values()))
     Furnished = st.checkbox('Furnished')
     Garden = st.checkbox('Garden')
-    GardenArea = st.number_input('Garden Area', format="%.1f")
+    GardenArea = st.number_input('Garden Area', format="%.0f")
     Kitchen = st.selectbox('Kitchen', list(kitchen_options.values()))
 
 with col2:
-    LivingArea = st.number_input('Living Area', format="%.1f")
-    MonthlyCharges = st.number_input('Monthly Charges', format="%.1f")
-    NumberOfFacades = st.number_input('Number of Facades', format="%.1f")
+    LivingArea = st.number_input('Living Area', format="%.0f")
+    MonthlyCharges = st.number_input('Monthly Charges', format="%.0f")
+    NumberOfFacades = st.number_input('Number of Facades', format="%.0f")
     PEB = st.selectbox('PEB', list(peb_options.values()))
     PostalCode = st.number_input('Postal Code', format="%.0f")
-    RoomCount = st.number_input('Room Count', format="%.1f")
-    ShowerCount = st.number_input('Shower Count', format="%.1f")
+    RoomCount = st.number_input('Room Count', format="%.0f")
+    ShowerCount = st.number_input('Shower Count', format="%.0f")
     StateOfBuilding = st.selectbox('State of Building', list(stateofbuilding_options.values()))
     SubtypeOfProperty = st.selectbox('Subtype of Property', list(subtypeofproperty_options.values()))
 
-SurfaceOfPlot = st.number_input('Surface of Plot', format="%.1f")
+SurfaceOfPlot = st.number_input('Surface of Plot', format="%.0f")
 SwimmingPool = st.checkbox('Swimming Pool')
 Terrace = st.checkbox('Terrace')
-ToiletCount = st.number_input('Toilet Count', format="%.1f")
+ToiletCount = st.number_input('Toilet Count', format="%.0f")
 
 house = st.checkbox('House')
 apartment = st.checkbox('Apartment')
@@ -159,7 +159,6 @@ if st.button("Predict Price") and TypeOfProperty is not None:
     payload = {
         "BathroomCount": BathroomCount,
         "BedroomCount": BedroomCount,
-# Type of Property Checkboxes
         "ConstructionYear": ConstructionYear,
         "Fireplace": 1 if Fireplace else 0,
         "FloodingZone": [key for key, value in floodingzone_options.items() if value == FloodingZone][0],
