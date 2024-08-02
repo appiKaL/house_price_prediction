@@ -1,5 +1,7 @@
 import streamlit as st
-import requests
+import joblib
+import numpy as np
+import pandas as pd
 
 st.set_page_config(
     page_title="House Price Prediction",
@@ -10,10 +12,6 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    .reportview-container {
-        background: url("https://your-image-url.com/background.jpg");
-        background-size: cover;
-    }
     .sidebar .sidebar-content {
         background: rgba(255, 255, 255, 0.9);
     }
@@ -153,7 +151,8 @@ else:
 
 TypeOfSale = st.selectbox('Type of Sale', list(typeofsale_options.values()))
 
-API_URL = "https://house-price-prediction-qd90.onrender.com"
+model = joblib.load("xgboost_model.pkl")
+feature_names = joblib.load("feature_names.pkl")
 
 if st.button("Predict Price") and TypeOfProperty is not None:
     payload = {
@@ -183,16 +182,13 @@ if st.button("Predict Price") and TypeOfProperty is not None:
         "TypeOfSale": [key for key, value in typeofsale_options.items() if value == TypeOfSale][0]
     }
 
-    st.write("Payload being sent to API:", payload)
+    st.write("Payload being used for prediction:", payload)
 
-    response = requests.post(API_URL, json=payload)
-    st.write("Raw response:", response.content)
+    input_df = pd.DataFrame([payload])
 
-    response_data = response.json()
-    st.write("Parsed response:", response_data)
+    input_df = input_df[feature_names]
 
-    if response.status_code == 200:
-        st.success(f"Predicted Price: {response_data['predicted_price']}")
-    else:
-        st.error(f"API returned an error: {response_data.get('detail', 'Unknown error')}")
+    prediction = model.predict(input_df)
+    predicted_price = prediction[0]
 
+    st.success(f"Predicted Price: {predicted_price}")

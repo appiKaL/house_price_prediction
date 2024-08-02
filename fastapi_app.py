@@ -1,17 +1,26 @@
 from fastapi import FastAPI, HTTPException
-import pickle
 import numpy as np
 from pydantic import BaseModel
 import xgboost as xgb
 import logging
+import joblib
+from sklearn.preprocessing import RobustScaler
+import pandas as pd
 
-# Configure logging
+scaler = joblib.load("scaler.pkl")
+encoders = joblib.load("encoders.pkl")
+feature_names = joblib.load("feature_names.pkl")
+
+if not isinstance(scaler, RobustScaler):
+    raise ValueError("Loaded scaler is not a RobustScaler instance")
+
+def transform_data(data):
+    return scaler.transform(data)
+
 logging.basicConfig(level=logging.INFO)
 
 model = xgb.Booster()
 model.load_model('xgboost_model.json')
-with open('scaler.pkl', 'rb') as f:
-    scaler = pickle.load(f)
 
 class HouseFeatures(BaseModel):
     BathroomCount: float
@@ -44,34 +53,35 @@ app = FastAPI()
 @app.post("/predict")
 def predict(features: HouseFeatures):
     try:
-        # Log received data
         logging.info(f"Received data: {features}")
 
-        # Prepare the feature array for prediction
+        features_dict = features.dict()
+        for column, categories in encoders.items():
+            if column in features_dict:
+                features_dict[column] = categories.get_loc(features_dict[column])
+
         features_array = np.array([[
-            features.BathroomCount, features.BedroomCount, features.ConstructionYear,
-            features.Fireplace, features.FloodingZone, features.Furnished,
-            features.Garden, features.GardenArea, features.Kitchen, features.LivingArea,
-            features.MonthlyCharges, features.NumberOfFacades, features.PEB, features.PostalCode,
-            features.RoomCount, features.ShowerCount, features.StateOfBuilding,
-            features.SubtypeOfProperty, features.SurfaceOfPlot, features.SwimmingPool,
-            features.Terrace, features.ToiletCount, features.TypeOfProperty,
-            features.TypeOfSale
+            features_dict['BathroomCount'], features_dict['BedroomCount'], features_dict['ConstructionYear'],
+            features_dict['Fireplace'], features_dict['FloodingZone'], features_dict['Furnished'],
+            features_dict['Garden'], features_dict['GardenArea'], features_dict['Kitchen'], features_dict['LivingArea'],
+            features_dict['MonthlyCharges'], features_dict['NumberOfFacades'], features_dict['PEB'], features_dict['PostalCode'],
+            features_dict['RoomCount'], features_dict['ShowerCount'], features_dict['StateOfBuilding'],
+            features_dict['SubtypeOfProperty'], features_dict['SurfaceOfPlot'], features_dict['SwimmingPool'],
+            features_dict['Terrace'], features_dict['ToiletCount'], features_dict['TypeOfProperty'],
+            features_dict['TypeOfSale']
         ]])
 
-        # Log the feature array before scaling
-        logging.info(f"Feature array before scaling: {features_array}")
+        features_df = pd.DataFrame(features_array, columns=feature_names)
 
-        # Scale the features
-        features_scaled = scaler.transform(features_array)
+        logging.info(f"Feature array before scaling: {features_df}")
 
-        # Log the feature array after scaling
+        features_scaled = transform_data(features_df)
+
         logging.info(f"Feature array after scaling: {features_scaled}")
 
-        # Make prediction
-        prediction = model.predict(features_scaled)
+        dmatrix = xgb.DMatrix(features_scaled)
+        prediction = model.predict(dmatrix)
 
-        # Log the prediction result
         logging.info(f"Prediction result: {prediction}")
 
         return {"predicted_price": prediction[0]}
