@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import json
 
 st.set_page_config(
     page_title="House Price Prediction",
@@ -24,7 +23,7 @@ st.markdown(
     }
     h1, h2, h3, h4, h5, h6 {
         color: #333333;
-        font-family: 'Arial', sans-serif;
+        font-family: 'Arial', sans-serif';
     }
     </style>
     """,
@@ -115,10 +114,10 @@ with col1:
     BathroomCount = st.number_input('Bathroom Count', format="%.1f")
     BedroomCount = st.number_input('Bedroom Count', format="%.1f")
     ConstructionYear = st.number_input('Construction Year', format="%.0f")
-    Fireplace = st.number_input('Fireplace', format="%.1f")
+    Fireplace = st.checkbox('Fireplace')
     FloodingZone = st.selectbox('Flooding Zone', list(floodingzone_options.values()))
-    Furnished = st.number_input('Furnished', format="%.1f")
-    Garden = st.number_input('Garden', format="%.1f")
+    Furnished = st.checkbox('Furnished')
+    Garden = st.checkbox('Garden')
     GardenArea = st.number_input('Garden Area', format="%.1f")
     Kitchen = st.selectbox('Kitchen', list(kitchen_options.values()))
 
@@ -134,23 +133,38 @@ with col2:
     SubtypeOfProperty = st.selectbox('Subtype of Property', list(subtypeofproperty_options.values()))
 
 SurfaceOfPlot = st.number_input('Surface of Plot', format="%.1f")
-SwimmingPool = st.number_input('Swimming Pool', format="%.1f")
-Terrace = st.number_input('Terrace', format="%.1f")
+SwimmingPool = st.checkbox('Swimming Pool')
+Terrace = st.checkbox('Terrace')
 ToiletCount = st.number_input('Toilet Count', format="%.1f")
-TypeOfProperty = st.number_input('Type of Property', format="%.0f")
+
+house = st.checkbox('House')
+apartment = st.checkbox('Apartment')
+
+if house and apartment:
+    st.error("Please select either 'House' or 'Apartment', not both.")
+    TypeOfProperty = None
+elif house:
+    TypeOfProperty = 1
+elif apartment:
+    TypeOfProperty = 2
+else:
+    st.error("Please select one of 'House' or 'Apartment'.")
+    TypeOfProperty = None
+
 TypeOfSale = st.selectbox('Type of Sale', list(typeofsale_options.values()))
 
-API_URL = "https://house-price-prediction-qd90.onrender.com"
+API_URL = "https://your-fastapi-service-url.onrender.com/predict"
 
-if st.button("Predict Price"):
+if st.button("Predict Price") and TypeOfProperty is not None:
     payload = {
         "BathroomCount": BathroomCount,
         "BedroomCount": BedroomCount,
+# Type of Property Checkboxes
         "ConstructionYear": ConstructionYear,
-        "Fireplace": Fireplace,
+        "Fireplace": 1 if Fireplace else 0,
         "FloodingZone": [key for key, value in floodingzone_options.items() if value == FloodingZone][0],
-        "Furnished": Furnished,
-        "Garden": Garden,
+        "Furnished": 1 if Furnished else 0,
+        "Garden": 1 if Garden else 0,
         "GardenArea": GardenArea,
         "Kitchen": [key for key, value in kitchen_options.items() if value == Kitchen][0],
         "LivingArea": LivingArea,
@@ -163,35 +177,24 @@ if st.button("Predict Price"):
         "StateOfBuilding": [key for key, value in stateofbuilding_options.items() if value == StateOfBuilding][0],
         "SubtypeOfProperty": [key for key, value in subtypeofproperty_options.items() if value == SubtypeOfProperty][0],
         "SurfaceOfPlot": SurfaceOfPlot,
-        "SwimmingPool": SwimmingPool,
-        "Terrace": Terrace,
+        "SwimmingPool": 1 if SwimmingPool else 0,
+        "Terrace": 1 if Terrace else 0,
         "ToiletCount": ToiletCount,
         "TypeOfProperty": TypeOfProperty,
+        "TypeOfSale":
         "TypeOfSale": [key for key, value in typeofsale_options.items() if value == TypeOfSale][0]
     }
 
-    # Debugging: Log the payload being sent
     st.write("Payload being sent to API:", payload)
 
-    try:
-        # Send the request to the FastAPI backend
-        response = requests.post(API_URL, json=payload)
+    response = requests.post(API_URL, json=payload)
+    st.write("Raw response:", response.content)
 
-        # Log the raw response for debugging purposes
-        st.write("Raw response:", response.content)
+    response_data = response.json()
+    st.write("Parsed response:", response_data)
 
-        # Attempt to parse the response as JSON
-        response_data = response.json()
+    if response.status_code == 200:
+        st.success(f"Predicted Price: {response_data['predicted_price']}")
+    else:
+        st.error(f"API returned an error: {response_data.get('detail', 'Unknown error')}")
 
-        # Log the parsed response
-        st.write("Parsed response:", response_data)
-
-        if response.status_code == 200:
-            st.success(f"Predicted Price: {response_data['predicted_price']}")
-        else:
-            st.error(f"API returned an error: {response_data.get('detail', 'Unknown error')}")
-    except json.JSONDecodeError as e:
-        st.error(f"JSON decode error: {str(e)}")
-        st.write("Response content that caused the error:", response.content)
-    except requests.exceptions.RequestException as e:
-        st.error(f"Request failed: {str(e)}")
