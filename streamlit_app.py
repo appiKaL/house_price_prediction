@@ -153,7 +153,7 @@ else:
 
 TypeOfSale = st.selectbox('Type of Sale', list(typeofsale_options.values()))
 
-API_URL = "https://your-fastapi-service-url.onrender.com/predict"
+API_URL = "https://house-price-prediction-qd90.onrender.com"
 
 if st.button("Predict Price") and TypeOfProperty is not None:
     payload = {
